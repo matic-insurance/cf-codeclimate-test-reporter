@@ -1,0 +1,7 @@
+version: '1.0'
+
+steps:
+  BuildImage:
+    title: Build Image
+    type: build
+    image_name: codeclimate-test-reporter
