@@ -1,7 +1,61 @@
 version: '1.0'
+stages:
+  - tests
+  - publish
 
 steps:
   BuildImage:
     title: Build Image
     type: build
-    image_name: codeclimate-test-reporter
+    image_name: cf-plugin-codeclimate
+    tag: test
+
+  Tests:
+    type: parallel
+    stage: tests
+    fail_fast: false
+    steps:
+      TestMissingReporterId:
+        title: 'Testing Missing CC_TEST_REPORTER_ID'
+        image: ${{BuildImage}}
+        environment:
+          - CC_COMMAND="env --debug"
+      TestMissingCommand:
+        title: 'Testing Missing CC_COMMAND'
+        image: ${{BuildImage}}
+        environment:
+          - CC_TEST_REPORTER_ID=123abc
+      TestSimpleCommand:
+        title: 'Testing Simple Env Command'
+        image: ${{BuildImage}}
+        environment:
+          - CC_TEST_REPORTER_ID=123abc
+          - CC_COMMAND="env --debug"
+      TestBeforeBuild:
+        title: 'Testing Before Build Command'
+        image: ${{BuildImage}}
+        environment:
+          - CC_TEST_REPORTER_ID=123abc
+          - CC_COMMAND="before-build --debug"
+
+  VerifyTestResults:
+    title: 'Verify Tests Results'
+    stage: tests
+    image: alpine:latest
+    commands:
+      - echo "Unit tests failed"
+      - exit 1
+    when:
+      condition:
+        any:
+          TestMissingReporterId: steps.TestMissingReporterId.result != 'failure'
+          TestMissingCommand: steps.TestMissingCommand.result != 'failure'
+          TestSimpleRun: steps.TestSimpleRun.result != 'success'
+          TestBeforeBuild: steps.TestBeforeBuild.result != 'success'
+
+  PushImage:
+    title: Push Image
+    type: push
+    stage: publish
+    candidate: ${{BuildImage}}
+    tag: latest
