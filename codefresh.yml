@@ -53,26 +53,38 @@ steps:
           TestSimpleRun: steps.TestSimpleRun.result != 'success'
           TestBeforeBuild: steps.TestBeforeBuild.result != 'success'
 
-  PushMasterImage:
-    title: Push Latest Image
-    type: push
+  Push:
+    type: parallel
     stage: publish
-    candidate: ${{BuildImage}}
-    tags:
-      - latest
-    when:
-      branch:
-        only:
-          - master
+    steps:
+      Print:
+        title: Print env variables
+        image: alpine
+        commands:
+          - env
 
-  PushReleaseImage:
-    title: Push Release Image
-    type: push
-    stage: publish
-    candidate: ${{BuildImage}}
-    tags:
-      - ${{CF_RELEASE_TAG}}
-    when:
-      condition:
-        all:
-          hasReleaseTag: 'match("${{CF_RELEASE_TAG}}", "\d+\.\d+\.\d+\.", true) == true'
+      PushMasterImage:
+        title: Push Latest Image
+        type: push
+        candidate: ${{BuildImage}}
+        image_name: maticinsurance/cf-plugin-codeclimate
+        registry: dockerhub
+        tags:
+          - latest
+        when:
+          branch:
+            only:
+              - master
+
+      PushReleaseImage:
+        title: Push Release Image
+        type: push
+        candidate: ${{BuildImage}}
+        image_name: maticinsurance/cf-plugin-codeclimate
+        registry: dockerhub
+        tags:
+          - ${{CF_RELEASE_TAG}}
+        when:
+          condition:
+            all:
+              hasReleaseTag: 'match("${{CF_RELEASE_TAG}}", "\d+\.\d+\.\d+\.", true) == true'
