@@ -19,7 +19,7 @@ steps:
         title: 'Testing Missing CC_TEST_REPORTER_ID'
         image: ${{BuildImage}}
         environment:
-          - CC_COMMAND="env --debug"
+          - CC_COMMAND=env --debug
       TestMissingCommand:
         title: 'Testing Missing CC_COMMAND'
         image: ${{BuildImage}}
@@ -30,13 +30,13 @@ steps:
         image: ${{BuildImage}}
         environment:
           - CC_TEST_REPORTER_ID=123abc
-          - CC_COMMAND="env --debug"
+          - CC_COMMAND=env --debug
       TestBeforeBuild:
         title: 'Testing Before Build Command'
         image: ${{BuildImage}}
         environment:
           - CC_TEST_REPORTER_ID=123abc
-          - CC_COMMAND="before-build --debug"
+          - CC_COMMAND=before-build --debug
 
   VerifyTestResults:
     title: 'Verify Tests Results'
