@@ -18,25 +18,23 @@ steps:
       TestMissingReporterId:
         title: 'Testing Missing CC_TEST_REPORTER_ID'
         image: ${{BuildImage}}
-        environment:
-          - CC_COMMAND=env --debug
-      TestMissingCommand:
-        title: 'Testing Missing CC_COMMAND'
-        image: ${{BuildImage}}
-        environment:
-          - CC_TEST_REPORTER_ID=123abc
+        commands:
+          - report env --debug
       TestSimpleCommand:
         title: 'Testing Simple Env Command'
         image: ${{BuildImage}}
         environment:
           - CC_TEST_REPORTER_ID=123abc
-          - CC_COMMAND=env --debug
-      TestBeforeBuild:
+        commands:
+          - report env --debug
+      TestMultipleCommands:
         title: 'Testing Before Build Command'
         image: ${{BuildImage}}
         environment:
           - CC_TEST_REPORTER_ID=123abc
-          - CC_COMMAND=before-build --debug
+        commands:
+          - report env --debug
+          - report before-build --debug
 
   VerifyTestResults:
     title: 'Verify Tests Results'
@@ -49,9 +47,8 @@ steps:
       condition:
         any:
           TestMissingReporterId: steps.TestMissingReporterId.result != 'failure'
-          TestMissingCommand: steps.TestMissingCommand.result != 'failure'
           TestSimpleRun: steps.TestSimpleRun.result != 'success'
-          TestBeforeBuild: steps.TestBeforeBuild.result != 'success'
+          TestMultipleCommands: steps.TestMultipleCommands.result != 'success'
 
   Push:
     type: parallel
