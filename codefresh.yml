@@ -57,12 +57,6 @@ steps:
     type: parallel
     stage: publish
     steps:
-      Print:
-        title: Print env variables
-        image: alpine
-        commands:
-          - env
-
       PushMasterImage:
         title: Push Latest Image
         type: push
@@ -87,4 +81,4 @@ steps:
         when:
           condition:
             all:
-              hasReleaseTag: 'match("${{CF_RELEASE_TAG}}", "\d+\.\d+\.\d+\.", true) == true'
+              hasReleaseTag: 'match("${{CF_RELEASE_TAG}}", "^\d+\.\d+\.\d+$", true) == true'
