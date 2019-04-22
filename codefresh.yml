@@ -75,4 +75,4 @@ steps:
     when:
       condition:
         all:
-          hasReleaseTag: '"${{CF_RELEASE_TAG}}" != ""'
+          hasReleaseTag: 'match("${{CF_RELEASE_TAG}}", "\d+\.\d+\.\d+\.", true) == true'
