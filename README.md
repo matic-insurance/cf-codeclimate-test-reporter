@@ -2,48 +2,45 @@
 
 [CodeFresh](https://codefresh.io) plugin to upload test coverage results to [CodeClimate](https://codeclimate.com)
 
+- Plugin provides mapping of CodeFresh git/ci values to CodeClimate
+- Plugin allows execution of multiple commands in single step
+
 # Usage
 
-Add freestyle pipeline step with CC_TEST_REPORTER_ID and CC_COMMAND
+1. Add freestyle pipeline step with CC_TEST_REPORTER_ID environment variable in a step or pipeline
+1. Execute arbitary number of commands using `report` script
+
+Arguments passed to `report` script in command will be passed to `cc-test-reporter` executable without changes
 
 ```yaml
   BeforeBuild:
     image: cf-plugin-codeclimate:latest
     environment:
       - CC_TEST_REPORTER_ID=123abc
-      - CC_COMMAND=before-build
+    commands:
+      - report before-build
 
   AfterBuild:
     image: cf-plugin-codeclimate:latest
     environment:
       - CC_TEST_REPORTER_ID=123abc
-      - CC_COMMAND=after-build reports/.testresult.json --input-type simplecov --prefix /app
+    commands:
+      - report after-build -t simplecov --prefix /app
 
-  FormatCoverage:
+  CodeClimateFormatAndUpload:
     image: cf-plugin-codeclimate:latest
     environment:
       - CC_TEST_REPORTER_ID=123abc
-      - CC_COMMAND=format-coverage reports/.resultset.json --input-type simplecov --prefix /app --output reports/cc/results.1.json
-
-  SumCoverage:
-    image: cf-plugin-codeclimate:latest
-    environment:
-      - CC_TEST_REPORTER_ID=123abc
-      - CC_COMMAND=sum-coverage reports/cc/results.*.json --parts 3 --output reports/cc/report.json
-
-  UploadCoverage:
-    image: cf-plugin-codeclimate:latest
-    environment:
-      - CC_TEST_REPORTER_ID=123abc
-      - CC_COMMAND=upload-coverage --input reports/cc/report.json
+    commands:
+      - report format-coverage reports/test_run_1/.resultset.json --input-type simplecov --prefix /app --output reports/cc/results.1.json
+      - report format-coverage reports/test_run_2/.resultset.json --input-type simplecov --prefix /app --output reports/cc/results.2.json
+      - report sum-coverage reports/cc/results.*.json --parts 2 --output reports/cc/report.json
+      - report upload-coverage --input reports/cc/report.json
 ```
-
-**Important:** Do not use quotes around CC_COMMAND variable
 
 # Environment Variables
 
 | Variable            | Required | Default | Description                                                                                  |
 |---------------------|----------|---------|----------------------------------------------------------------------------------------------|
 | CC_TEST_REPORTER_ID | yes      |         | CodeClimate Test Reporter ID                                                                 |
-| CC_COMMAND          | yes      |         | CodeClimate command to execute                                                               |
 
